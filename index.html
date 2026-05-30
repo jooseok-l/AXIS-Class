@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AXIS Class Architecture | Jooseok Lee</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  /* ── AXIS BRAND COLOURS ── */
+  :root {
+    --black:    #0D0D0D;
+    --dark:     #141414;
+    --card:     #1C1C1C;
+    --border:   #2C2C2C;
+    --accent:   #C8FF00;   /* AXIS signature lime */
+    --accent2:  #FF4D00;   /* AXIS orange-red */
+    --text:     #F2F2F2;
+    --muted:    #7A7A7A;
+    --white:    #FFFFFF;
+    /* class-type palette */
+    --hiit:     #FF4D00;
+    --strength: #0094FF;
+    --tri15:    #00E5A0;   /* 15/15/15 */
+    --circuits: #B44DFF;
+    --pt:       #FFD000;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--dark);
+    border-bottom: 2px solid var(--accent);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-block { display:flex; flex-direction:column; line-height:1; }
+
+  .logo-main {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 5px;
+    color: var(--accent);
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--black);
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .nav-tab {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-tab.active { background: var(--card); color: var(--accent); }
+
+  /* ── VIEWS ── */
+  .view { display:none; padding:24px; }
+  .view.active { display:block; }
+
+  /* ── BUILDER GRID ── */
+  .builder-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  /* ── CLASS TYPE BUTTONS ── */
+  .class-types {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .class-type-btn {
+    padding: 11px 8px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--black);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+  .class-type-btn.hiit.active     { border-color:var(--hiit);     color:var(--hiit);     background:rgba(255,77,0,0.1); }
+  .class-type-btn.strength.active { border-color:var(--strength); color:var(--strength); background:rgba(0,148,255,0.1); }
+  .class-type-btn.tri15.active    { border-color:var(--tri15);    color:var(--tri15);    background:rgba(0,229,160,0.1); }
+  .class-type-btn.circuits.active { border-color:var(--circuits); color:var(--circuits); background:rgba(180,77,255,0.1); }
+  .class-type-btn.pt { grid-column: span 2; }
+  .class-type-btn.pt.active       { border-color:var(--pt);       color:var(--pt);       background:rgba(255,208,0,0.1); }
+
+  /* ── PT CLIENT FIELD ── */
+  .pt-client-row {
+    display: none;
+    margin-bottom: 16px;
+  }
+
+  .pt-client-row.visible { display: flex; flex-direction: column; gap: 6px; }
+
+  .pt-client-input {
+    background: var(--black);
+    border: 1px solid var(--pt);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+  }
+
+  .pt-client-input::placeholder { color: var(--muted); }
+
+  /* ── CONTROLS ── */
+  .control-group { margin-bottom: 14px; }
+
+  .control-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+    display: block;
+  }
+
+  .control-row { display: flex; gap: 8px; align-items: center; }
+
+  .number-input {
+    flex: 1;
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .number-input:focus { border-color: var(--accent); }
+
+  .input-unit {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    min-width: 28px;
+  }
+
+  /* ── TIME CALCULATOR ── */
+  .time-calc {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .time-breakdown { display: flex; flex-direction: column; gap: 9px; }
+
+  .time-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  .time-row .label { color: var(--muted); }
+
+  .time-row .value {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .time-row.total {
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  .time-row.total .label { color: var(--text); font-weight: 700; font-size: 13px; }
+
+  .time-row.total .value { color: var(--accent); font-size: 20px; font-weight: 700; }
+
+  .time-bar {
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+
+  .time-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease, background 0.3s;
+  }
+
+  .time-status {
+    text-align: right;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 5px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── OUTPUT PANEL ── */
+  .output-panel { position: sticky; top: 80px; }
+
+  .class-card {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .class-card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: var(--dark);
+  }
+
+  .class-type-tag {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 3px;
+  }
+
+  .class-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .class-meta {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  /* ── WORKOUT TABLE ── */
+  .workout-table { width:100%; border-collapse:collapse; }
+
+  .workout-table th {
+    background: var(--card);
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .workout-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .workout-table tr:last-child td { border-bottom: none; }
+  .workout-table tbody tr:hover td { background: rgba(200,255,0,0.02); }
+
+  .segment-row td {
+    background: rgba(200,255,0,0.04);
+    padding: 7px 14px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ex-name { font-weight: 600; color: var(--text); }
+
+  .ex-cat {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .ex-timing {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── SEGMENT CARD ── */
+  .segment {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .segment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .segment-name {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .segment-duration {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: rgba(200,255,0,0.1);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(200,255,0,0.2);
+  }
+
+  /* ── EXERCISE SLOTS ── */
+  .exercise-slot {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 7px;
+    align-items: center;
+  }
+
+  .category-select, .exercise-select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .category-select { min-width: 105px; }
+  .exercise-select { flex: 1; }
+  .category-select:focus, .exercise-select:focus { border-color: var(--accent); }
+
+  .slot-timing {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .add-slot-btn {
+    width: 100%;
+    padding: 7px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+
+  .add-slot-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── FINISHER CONTROLS ── */
+  .finisher-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: rgba(180,77,255,0.05);
+    border: 1px solid rgba(180,77,255,0.2);
+    border-radius: 8px;
+  }
+
+  .finisher-ctrl-group { display: flex; flex-direction: column; gap: 4px; }
+
+  .finisher-ctrl-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .finisher-ctrl-input {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    text-align: center;
+    outline: none;
+    width: 100%;
+  }
+
+  .finisher-ctrl-input:focus { border-color: var(--circuits); }
+
+  /* ── WARMUP/COOLDOWN SIMPLE LIST ── */
+  .simple-slot {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 7px;
+    align-items: center;
+  }
+
+  .simple-exercise-input {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .simple-exercise-input:focus { border-color: var(--tri15); }
+  .simple-exercise-input::placeholder { color: var(--muted); }
+
+  /* ── ACTION BUTTONS ── */
+  .action-row {
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    flex: 1;
+    padding: 11px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-primary { background: var(--accent); color: var(--black); }
+  .btn-primary:hover { background: #b8ef00; transform: translateY(-1px); }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── TAGS ── */
+  .tag { font-size:10px; padding:2px 7px; border-radius:4px; font-weight:700; }
+  .tag-upper    { background:rgba(0,148,255,0.15);  color:#0094FF; }
+  .tag-lower    { background:rgba(255,77,0,0.15);   color:#FF4D00; }
+  .tag-core     { background:rgba(200,255,0,0.15);  color:#C8FF00; }
+  .tag-glute    { background:rgba(180,77,255,0.15); color:#B44DFF; }
+  .tag-cardio   { background:rgba(255,70,70,0.15);  color:#FF4646; }
+  .tag-mobility { background:rgba(0,229,160,0.15);  color:#00E5A0; }
+  .tag-full     { background:rgba(255,208,0,0.15);  color:#FFD000; }
+
+  /* ── DELETE BTN ── */
+  .delete-btn {
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    font-size: 15px; padding: 4px; border-radius: 4px;
+    transition: color 0.2s; line-height:1;
+  }
+  .delete-btn:hover { color: var(--hiit); }
+
+  /* ── CLASS LOG ── */
+  .log-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .log-title { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:3px; color:var(--accent); }
+
+  .log-form {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 20px;
+  }
+
+  .form-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:14px; }
+
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+
+  .form-label { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); }
+
+  .form-input, .form-select {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 13px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+
+  .form-textarea {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 13px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  .form-textarea:focus { border-color: var(--accent); }
+
+  .participant-chips {
+    display: flex; flex-wrap:wrap; gap:7px; margin-top:7px;
+    min-height:38px; background:var(--black);
+    border:1px solid var(--border); border-radius:8px; padding:7px;
+  }
+
+  .chip {
+    display:flex; align-items:center; gap:5px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:20px; padding:3px 11px; font-size:11px;
+  }
+
+  .chip-remove { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; line-height:1; }
+  .chip-remove:hover { color:var(--hiit); }
+
+  .add-participant-row { display:flex; gap:8px; margin-top:7px; }
+
+  .rating-stars { display:flex; gap:5px; margin-top:4px; }
+
+  .star-btn {
+    background:none; border:none; font-size:22px; cursor:pointer;
+    transition:transform 0.1s; color:var(--border);
+  }
+
+  .star-btn.active { color:var(--accent); }
+  .star-btn:hover { transform:scale(1.2); }
+
+  .log-entries { display:flex; flex-direction:column; gap:11px; }
+
+  .log-entry {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:12px; padding:15px 18px;
+    display:grid; grid-template-columns:auto 1fr auto;
+    gap:14px; align-items:start; transition:border-color 0.2s;
+  }
+
+  .log-entry:hover { border-color:var(--accent); }
+
+  .entry-date-block { text-align:center; min-width:44px; }
+  .entry-day { font-family:'Bebas Neue',sans-serif; font-size:26px; line-height:1; color:var(--accent); }
+  .entry-month { font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+
+  .entry-title { font-weight:700; font-size:14px; margin-bottom:4px; display:flex; align-items:center; gap:10px; }
+
+  .entry-meta { font-size:11px; color:var(--muted); display:flex; gap:12px; flex-wrap:wrap; margin-bottom:5px; }
+
+  .entry-notes { font-size:11px; color:var(--muted); line-height:1.5; font-style:italic; }
+
+  .entry-participants { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+
+  .participant-tag {
+    font-size:10px; background:var(--black); border:1px solid var(--border);
+    border-radius:4px; padding:2px 7px; color:var(--muted);
+  }
+
+  .entry-rating { font-size:13px; letter-spacing:2px; color:var(--accent); }
+
+  .no-entries { text-align:center; padding:40px; color:var(--muted); font-size:13px; }
+
+  /* ── DATABASE VIEW ── */
+  .db-filters { display:flex; gap:9px; margin-bottom:18px; flex-wrap:wrap; }
+
+  .filter-btn {
+    padding:7px 16px; border-radius:20px; border:1px solid var(--border);
+    background:var(--card); color:var(--muted); font-size:12px; font-weight:700;
+    cursor:pointer; transition:all 0.2s;
+  }
+
+  .filter-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(200,255,0,0.07); }
+
+  .db-search {
+    flex:1; min-width:180px; background:var(--card);
+    border:1px solid var(--border); border-radius:20px;
+    padding:8px 16px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:13px; outline:none;
+  }
+
+  .db-search:focus { border-color:var(--accent); }
+
+  .exercise-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:9px; }
+
+  .exercise-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:13px; transition:all 0.2s;
+  }
+
+  .exercise-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+
+  .exercise-card-name { font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text); }
+
+  .exercise-card-meta { display:flex; gap:5px; flex-wrap:wrap; }
+
+  /* ── PRINT — only the class-preview card ── */
+  @media print {
+    @page { margin: 15mm; }
+
+    /* hide everything by default */
+    body * { visibility: hidden; }
+
+    /* show only the print-target and all its children */
+    #print-target,
+    #print-target * { visibility: visible; }
+
+    #print-target {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      background: #fff !important;
+      color: #000 !important;
+    }
+
+    #print-target .class-card {
+      border: 1px solid #ccc;
+      border-radius: 0;
+      background: #fff !important;
+    }
+
+    #print-target .class-card-header {
+      background: #f5f5f5 !important;
+    }
+
+    #print-target .class-type-tag { color: #000 !important; }
+    #print-target .class-subtitle,
+    #print-target .class-meta { color: #444 !important; }
+
+    #print-target .workout-table th { background: #eee !important; color: #555 !important; }
+    #print-target .workout-table td { color: #000 !important; border-bottom: 1px solid #ddd !important; }
+    #print-target .segment-row td { background: #f0f0f0 !important; color: #333 !important; }
+    #print-target .ex-name { color: #000 !important; }
+    #print-target .ex-timing { color: #444 !important; }
+    #print-target .ex-cat { color: #333 !important; background: #eee !important; }
+    #print-target .segment-duration { color: #000 !important; background: #eee !important; }
+
+    #print-target .action-row { display: none !important; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width:900px) {
+    .builder-grid { grid-template-columns:1fr; }
+    .output-panel { position:static; }
+    .form-grid { grid-template-columns:1fr 1fr; }
+  }
+
+  @media (max-width:600px) {
+    .form-grid { grid-template-columns:1fr; }
+    .nav-tab { padding:7px 11px; font-size:12px; }
+    .finisher-controls { grid-template-columns:1fr; }
+  }
+
+  ::-webkit-scrollbar { width:5px; height:5px; }
+  ::-webkit-scrollbar-track { background:var(--black); }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="logo-block">
+    <span class="logo-main">AXIS CLASS ARCHITECTURE</span>
+    <span class="logo-sub">Jooseok Lee · Performance Coaching</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showView('builder')">Class Builder</button>
+    <button class="nav-tab" onclick="showView('log')">Class Log</button>
+    <button class="nav-tab" onclick="showView('database')">Exercise DB</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════ CLASS BUILDER ══════════════════ -->
+<div id="view-builder" class="view active">
+  <div class="builder-grid">
+
+    <!-- LEFT: CONTROLS -->
+    <div>
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-title">CLASS TYPE</div>
+
+        <div class="class-types">
+          <button class="class-type-btn hiit active" onclick="setClassType('HIIT',this)">🔥 HIIT</button>
+          <button class="class-type-btn strength"    onclick="setClassType('Strength',this)">💪 Strength</button>
+          <button class="class-type-btn tri15"       onclick="setClassType('15/15/15',this)">⚡ 15/15/15</button>
+          <button class="class-type-btn circuits"    onclick="setClassType('Circuits',this)">🔄 Circuits</button>
+          <button class="class-type-btn pt"          onclick="setClassType('PT',this)">🎯 Personal Training</button>
+        </div>
+
+        <!-- PT CLIENT NAME (only visible when PT selected) -->
+        <div class="pt-client-row" id="pt-client-row">
+          <span class="control-label" style="color:var(--pt)">Client Name</span>
+          <input type="text" class="pt-client-input" id="pt-client-name"
+                 placeholder="Enter client name..." oninput="updatePreview()">
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">Total Class Duration</span>
+          <div class="control-row">
+            <input type="number" class="number-input" id="totalTime" value="45" min="20" max="90" oninput="updateCalculator()">
+            <span class="input-unit">MIN</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">Work Interval</span>
+          <div class="control-row">
+            <input type="number" class="number-input" id="workTime" value="40" min="10" max="120" oninput="updateCalculator()">
+            <span class="input-unit">SEC</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">Rest Between Exercises</span>
+          <div class="control-row">
+            <input type="number" class="number-input" id="restTime" value="20" min="0" max="120" oninput="updateCalculator()">
+            <span class="input-unit">SEC</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">Sets per Exercise</span>
+          <div class="control-row">
+            <input type="number" class="number-input" id="setsCount" value="3" min="1" max="6" oninput="updateCalculator()">
+            <span class="input-unit">SETS</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">Rest Between Sets</span>
+          <div class="control-row">
+            <input type="number" class="number-input" id="setBetweenRest" value="30" min="0" max="180" oninput="updateCalculator()">
+            <span class="input-unit">SEC</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="control-group">
+            <span class="control-label">Warm-up</span>
+            <div class="control-row">
+              <input type="number" class="number-input" id="warmupTime" value="5" min="0" max="15" oninput="updateCalculator()">
+              <span class="input-unit">MIN</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <span class="control-label">Cool-down</span>
+            <div class="control-row">
+              <input type="number" class="number-input" id="cooldownTime" value="5" min="0" max="15" oninput="updateCalculator()">
+              <span class="input-unit">MIN</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIME CALCULATOR -->
+      <div class="panel">
+        <div class="panel-title">⏱ TIME CALCULATOR</div>
+        <div class="time-calc">
+          <div class="time-breakdown">
+            <div class="time-row"><span class="label">Warm-up</span><span class="value" id="calc-warmup">5:00</span></div>
+            <div class="time-row"><span class="label">Main block work</span><span class="value" id="calc-work">—</span></div>
+            <div class="time-row"><span class="label">Rest &amp; transitions</span><span class="value" id="calc-rest">—</span></div>
+            <div class="time-row"><span class="label">Finisher</span><span class="value" id="calc-finisher">—</span></div>
+            <div class="time-row"><span class="label">Cool-down</span><span class="value" id="calc-cooldown">5:00</span></div>
+            <div class="time-row total">
+              <span class="label">Total Used &nbsp;/&nbsp; Max Exercises</span>
+              <span class="value" id="calc-total">—</span>
+            </div>
+          </div>
+          <div class="time-bar">
+            <div class="time-bar-fill" id="time-bar-fill" style="width:0%;background:var(--accent)"></div>
+          </div>
+          <div class="time-status" id="calc-remaining"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: WORKOUT BUILDER + PREVIEW -->
+    <div class="output-panel">
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-title">🏗 BUILD YOUR WORKOUT</div>
+
+        <!-- WARM-UP (simple list, no timing) -->
+        <div class="segment">
+          <div class="segment-header">
+            <span class="segment-name" style="color:var(--tri15)">🌡 Warm-Up</span>
+            <span class="segment-duration" id="seg-warmup-dur">5:00</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:0.5px">
+            List exercises to cover within warm-up window — no set/time details required
+          </div>
+          <div id="warmup-slots">
+            <div class="simple-slot">
+              <input class="simple-exercise-input" type="text" placeholder="e.g. Hip circles, leg swings..." oninput="updatePreview()">
+              <button class="delete-btn" onclick="this.parentElement.remove();updatePreview()">×</button>
+            </div>
+          </div>
+          <button class="add-slot-btn" onclick="addSimpleSlot('warmup-slots')">+ Add exercise</button>
+        </div>
+
+        <!-- MAIN BLOCK (full timing) -->
+        <div class="segment">
+          <div class="segment-header">
+            <span class="segment-name" style="color:var(--hiit)">⚡ Main Block</span>
+            <span class="segment-duration" id="seg-main-dur">—</span>
+          </div>
+          <div id="main-slots">
+            <div class="exercise-slot">
+              <select class="category-select" onchange="updateExerciseOptions(this)">
+                <option value="">Category</option>
+                <option value="upper">Upper Body</option>
+                <option value="lower">Lower Body</option>
+                <option value="core">Core</option>
+                <option value="glute">Glute</option>
+                <option value="cardio">Cardio</option>
+                <option value="full">Full Body</option>
+              </select>
+              <select class="exercise-select" onchange="updatePreview()"><option>— Select exercise —</option></select>
+              <button class="delete-btn" onclick="this.parentElement.remove();updatePreview()">×</button>
+            </div>
+          </div>
+          <button class="add-slot-btn" onclick="addMainSlot()">+ Add exercise</button>
+        </div>
+
+        <!-- FINISHER (custom timing controls) -->
+        <div class="segment">
+          <div class="segment-header">
+            <span class="segment-name" style="color:var(--circuits)">🔥 Finisher</span>
+            <span class="segment-duration" id="seg-finisher-dur">—</span>
+          </div>
+          <!-- Finisher-specific timing -->
+          <div class="finisher-controls">
+            <div class="finisher-ctrl-group">
+              <span class="finisher-ctrl-label">Work (sec)</span>
+              <input type="number" class="finisher-ctrl-input" id="fin-work" value="30" min="5" max="120" oninput="updateCalculator()">
+            </div>
+            <div class="finisher-ctrl-group">
+              <span class="finisher-ctrl-label">Sets</span>
+              <input type="number" class="finisher-ctrl-input" id="fin-sets" value="2" min="1" max="10" oninput="updateCalculator()">
+            </div>
+            <div class="finisher-ctrl-group">
+              <span class="finisher-ctrl-label">Rest (sec)</span>
+              <input type="number" class="finisher-ctrl-input" id="fin-rest" value="10" min="0" max="60" oninput="updateCalculator()">
+            </div>
+          </div>
+          <div id="finisher-slots">
+            <div class="exercise-slot">
+              <select class="category-select" onchange="updateExerciseOptions(this)">
+                <option value="">Category</option>
+                <option value="cardio">Cardio</option>
+                <option value="full">Full Body</option>
+                <option value="core">Core</option>
+              </select>
+              <select class="exercise-select" onchange="updatePreview()"><option>— Select exercise —</option></select>
+              <button class="delete-btn" onclick="this.parentElement.remove();updatePreview()">×</button>
+            </div>
+          </div>
+          <button class="add-slot-btn" onclick="addFinisherSlot()">+ Add exercise</button>
+        </div>
+
+        <!-- COOL-DOWN (simple list, no timing) -->
+        <div class="segment">
+          <div class="segment-header">
+            <span class="segment-name" style="color:var(--tri15)">❄️ Cool-Down</span>
+            <span class="segment-duration" id="seg-cooldown-dur">5:00</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:0.5px">
+            List stretches/recovery exercises — covered within cool-down window
+          </div>
+          <div id="cooldown-slots">
+            <div class="simple-slot">
+              <input class="simple-exercise-input" type="text" placeholder="e.g. Pigeon pose, child's pose..." oninput="updatePreview()">
+              <button class="delete-btn" onclick="this.parentElement.remove();updatePreview()">×</button>
+            </div>
+          </div>
+          <button class="add-slot-btn" onclick="addSimpleSlot('cooldown-slots')">+ Add exercise</button>
+        </div>
+      </div>
+
+      <!-- ── LIVE PREVIEW (print target) ── -->
+      <div id="print-target">
+        <div class="class-card" id="class-preview">
+          <div class="class-card-header">
+            <div>
+              <div class="class-type-tag" id="preview-type" style="color:var(--hiit)">HIIT</div>
+              <div class="class-subtitle" id="preview-subtitle"></div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px" id="preview-date"></div>
+            </div>
+            <div class="class-meta">
+              <span id="preview-duration">⏱ 45 min</span>
+              <span id="preview-exercises">💪 — exercises</span>
+            </div>
+          </div>
+
+          <table class="workout-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Exercise</th>
+                <th>Category</th>
+                <th>Sets × Work</th>
+                <th>Rest</th>
+              </tr>
+            </thead>
+            <tbody id="preview-body">
+              <tr><td colspan="5" style="text-align:center;padding:28px;color:var(--muted);font-size:12px">
+                Select exercises above to build your class plan
+              </td></tr>
+            </tbody>
+          </table>
+
+          <div class="action-row">
+            <button class="btn btn-secondary" onclick="autoFill()">⚡ Auto-Fill</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑 Clear</button>
+            <button class="btn btn-primary" onclick="printClass()">🖨 Print Class</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /output-panel -->
+  </div><!-- /builder-grid -->
+</div>
+
+
+<!-- ══════════════════ CLASS LOG ══════════════════ -->
+<div id="view-log" class="view">
+  <div class="log-header">
+    <div class="log-title">📋 Class Log</div>
+    <button class="btn btn-primary" style="width:auto;padding:10px 20px" onclick="toggleLogForm()">+ Log Class</button>
+  </div>
+
+  <div class="log-form" id="log-form" style="display:none">
+    <div class="panel-title">✏️ NEW ENTRY</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <span class="form-label">Date</span>
+        <input type="date" class="form-input" id="log-date">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Class Type</span>
+        <select class="form-select" id="log-type">
+          <option>HIIT</option><option>Strength</option>
+          <option>15/15/15</option><option>Circuits</option><option>PT</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Time</span>
+        <input type="time" class="form-input" id="log-time">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Duration (min)</span>
+        <input type="number" class="form-input" id="log-duration" value="45" min="10" max="120">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Location</span>
+        <input type="text" class="form-input" id="log-location" placeholder="e.g. Bankers Hall">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Attendance #</span>
+        <input type="number" class="form-input" id="log-attendance" min="0" max="100">
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <span class="form-label">Participants</span>
+      <div class="participant-chips" id="participant-chips"></div>
+      <div class="add-participant-row">
+        <input type="text" class="form-input" id="participant-input" placeholder="Add participant name..."
+               style="flex:1" onkeydown="if(event.key==='Enter')addParticipant()">
+        <button class="btn btn-secondary" style="width:auto;padding:9px 15px" onclick="addParticipant()">Add</button>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <span class="form-label">Class Rating</span>
+      <div class="rating-stars" id="rating-stars">
+        <button class="star-btn" onclick="setRating(1)">★</button>
+        <button class="star-btn" onclick="setRating(2)">★</button>
+        <button class="star-btn" onclick="setRating(3)">★</button>
+        <button class="star-btn" onclick="setRating(4)">★</button>
+        <button class="star-btn" onclick="setRating(5)">★</button>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <span class="form-label">Energy / Engagement</span>
+      <select class="form-select" id="log-energy">
+        <option value="">Select...</option>
+        <option>🔥 High — group was dialled in</option>
+        <option>✅ Good — steady and consistent</option>
+        <option>😐 Average — got through it</option>
+        <option>😴 Low — tough crowd or off day</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <span class="form-label">What Worked Well</span>
+      <textarea class="form-textarea" id="log-wins" placeholder="Exercises that landed, format that clicked..."></textarea>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <span class="form-label">Adjust Next Time</span>
+      <textarea class="form-textarea" id="log-adjust" placeholder="Timing changes, exercise swaps, pacing notes..."></textarea>
+    </div>
+
+    <div class="form-group" style="margin-bottom:20px">
+      <span class="form-label">Coach Notes</span>
+      <textarea class="form-textarea" id="log-notes" placeholder="General observations, participant feedback..."></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="saveLogEntry()">Save Entry</button>
+      <button class="btn btn-secondary" onclick="toggleLogForm()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="no-entries" id="no-entries-msg">No classes logged yet. Tap "+ Log Class" to add your first.</div>
+  <div class="log-entries" id="log-entries-list"></div>
+</div>
+
+
+<!-- ══════════════════ EXERCISE DB ══════════════════ -->
+<div id="view-database" class="view">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--accent)">Exercise Database</div>
+    <div style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace" id="db-count"></div>
+  </div>
+  <div class="db-filters">
+    <input type="text" class="db-search" placeholder="🔍 Search exercises..." oninput="filterDatabase()" id="db-search">
+    <button class="filter-btn active" onclick="filterCategory('all',this)">All</button>
+    <button class="filter-btn" onclick="filterCategory('upper',this)">Upper</button>
+    <button class="filter-btn" onclick="filterCategory('lower',this)">Lower</button>
+    <button class="filter-btn" onclick="filterCategory('core',this)">Core</button>
+    <button class="filter-btn" onclick="filterCategory('glute',this)">Glute</button>
+    <button class="filter-btn" onclick="filterCategory('cardio',this)">Cardio</button>
+    <button class="filter-btn" onclick="filterCategory('mobility',this)">Mobility</button>
+    <button class="filter-btn" onclick="filterCategory('full',this)">Full Body</button>
+  </div>
+  <div class="exercise-grid" id="exercise-grid"></div>
+</div>
+
+
+<!-- ══════════════════ JAVASCRIPT ══════════════════ -->
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+/* ── FIREBASE INIT ── */
+const firebaseConfig = {
+  apiKey: "AIzaSyCVvzKG3ld91K9W3rTLe81iFB7plWXBXZQ",
+  authDomain: "axis-class-app.firebaseapp.com",
+  projectId: "axis-class-app",
+  storageBucket: "axis-class-app.firebasestorage.app",
+  messagingSenderId: "747443576955",
+  appId: "1:747443476955:web:4744970a42f4325c3842de"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ── EXERCISE DATABASE ── */
+const EXERCISES = {
+  upper:[
+    {name:"Push-Up",tags:["upper","strength"]},{name:"Diamond Push-Up",tags:["upper","strength"]},
+    {name:"Wide Push-Up",tags:["upper","strength"]},{name:"Pike Push-Up",tags:["upper","strength"]},
+    {name:"Decline Push-Up",tags:["upper","strength"]},{name:"Dumbbell Press",tags:["upper","strength"]},
+    {name:"Incline DB Press",tags:["upper","strength"]},{name:"DB Chest Fly",tags:["upper","strength"]},
+    {name:"DB Shoulder Press",tags:["upper","strength"]},{name:"Arnold Press",tags:["upper","strength"]},
+    {name:"Lateral Raise",tags:["upper","strength"]},{name:"Front Raise",tags:["upper","strength"]},
+    {name:"Bent-Over Row",tags:["upper","strength"]},{name:"Single-Arm Row",tags:["upper","strength"]},
+    {name:"Upright Row",tags:["upper","strength"]},{name:"Face Pull",tags:["upper","strength"]},
+    {name:"Bicep Curl",tags:["upper","strength"]},{name:"Hammer Curl",tags:["upper","strength"]},
+    {name:"Concentration Curl",tags:["upper","strength"]},{name:"Tricep Dip",tags:["upper","strength"]},
+    {name:"Tricep Kickback",tags:["upper","strength"]},{name:"Skull Crusher",tags:["upper","strength"]},
+    {name:"Overhead Tricep Extension",tags:["upper","strength"]},{name:"Band Pull-Apart",tags:["upper","mobility"]},
+    {name:"Chest Press Machine",tags:["upper","strength"]},{name:"Cable Row",tags:["upper","strength"]},
+    {name:"TRX Row",tags:["upper","strength"]},{name:"Renegade Row",tags:["upper","strength","core"]},
+    {name:"Shoulder Tap",tags:["upper","core","strength"]},{name:"Plank to Push-Up",tags:["upper","core","strength"]},
+    {name:"DB Pullover",tags:["upper","strength"]},{name:"Reverse Fly",tags:["upper","strength"]},
+    {name:"Bear Crawl",tags:["upper","full","cardio"]},{name:"Inchworm",tags:["upper","mobility","full"]},
+    {name:"Push-Up to Down Dog",tags:["upper","mobility"]},{name:"Wall Angels",tags:["upper","mobility"]}
+  ],
+  lower:[
+    {name:"Squat",tags:["lower","strength"]},{name:"Sumo Squat",tags:["lower","strength"]},
+    {name:"Jump Squat",tags:["lower","cardio","hiit"]},{name:"Bulgarian Split Squat",tags:["lower","strength"]},
+    {name:"Reverse Lunge",tags:["lower","strength"]},{name:"Forward Lunge",tags:["lower","strength"]},
+    {name:"Lateral Lunge",tags:["lower","strength","mobility"]},{name:"Step-Up",tags:["lower","strength"]},
+    {name:"Box Jump",tags:["lower","cardio","hiit"]},{name:"Squat Jump",tags:["lower","cardio","hiit"]},
+    {name:"Romanian Deadlift",tags:["lower","strength"]},{name:"Stiff-Leg Deadlift",tags:["lower","strength"]},
+    {name:"Single-Leg Deadlift",tags:["lower","strength","balance"]},{name:"Goblet Squat",tags:["lower","strength"]},
+    {name:"Curtsy Lunge",tags:["lower","strength","glute"]},{name:"Wall Sit",tags:["lower","strength"]},
+    {name:"Calf Raise",tags:["lower","strength"]},{name:"Single-Leg Calf Raise",tags:["lower","strength"]},
+    {name:"Glute Bridge",tags:["lower","glute","strength"]},{name:"Hip Thrust",tags:["lower","glute","strength"]},
+    {name:"Skater Jump",tags:["lower","cardio","hiit"]},{name:"Speed Skater",tags:["lower","cardio"]},
+    {name:"Leg Press",tags:["lower","strength"]},{name:"Leg Extension",tags:["lower","strength"]},
+    {name:"Leg Curl",tags:["lower","strength"]},{name:"Lunge Jump",tags:["lower","cardio","hiit"]},
+    {name:"Squat to Press",tags:["lower","upper","full"]},{name:"Hack Squat",tags:["lower","strength"]},
+    {name:"Lateral Band Walk",tags:["lower","glute"]},{name:"Monster Walk",tags:["lower","glute"]},
+    {name:"Fire Hydrant",tags:["lower","glute"]},{name:"Donkey Kick",tags:["lower","glute"]},
+    {name:"Plié Squat",tags:["lower","glute","strength"]},{name:"Step-Back Lunge",tags:["lower","strength"]},
+    {name:"Suitcase Squat",tags:["lower","strength"]},{name:"Standing Hip Abduction",tags:["lower","glute"]}
+  ],
+  core:[
+    {name:"Plank",tags:["core","strength"]},{name:"Side Plank",tags:["core","strength"]},
+    {name:"Plank Hip Dip",tags:["core","strength"]},{name:"Dead Bug",tags:["core","strength"]},
+    {name:"Bird Dog",tags:["core","strength","mobility"]},{name:"Hollow Hold",tags:["core","strength"]},
+    {name:"Crunch",tags:["core","strength"]},{name:"Bicycle Crunch",tags:["core","strength"]},
+    {name:"Reverse Crunch",tags:["core","strength"]},{name:"Leg Raise",tags:["core","strength"]},
+    {name:"Flutter Kick",tags:["core","strength","cardio"]},{name:"Scissor Kick",tags:["core","strength"]},
+    {name:"V-Up",tags:["core","strength"]},{name:"Toe Touch",tags:["core","strength"]},
+    {name:"Russian Twist",tags:["core","strength"]},{name:"Windmill",tags:["core","strength","mobility"]},
+    {name:"Mountain Climber",tags:["core","cardio","hiit"]},{name:"Slow Mountain Climber",tags:["core","strength"]},
+    {name:"Ab Wheel Rollout",tags:["core","strength"]},{name:"Pallof Press",tags:["core","strength"]},
+    {name:"Woodchop",tags:["core","strength","full"]},{name:"Cable Crunch",tags:["core","strength"]},
+    {name:"Hanging Knee Raise",tags:["core","strength"]},{name:"Dragon Flag",tags:["core","strength"]},
+    {name:"Bear Plank",tags:["core","strength"]},{name:"Spiderman Plank",tags:["core","strength","hiit"]},
+    {name:"Stir the Pot",tags:["core","strength"]},{name:"Suitcase Carry",tags:["core","strength"]},
+    {name:"Farmer Carry",tags:["core","full","strength"]},{name:"Plank to Row",tags:["core","upper","strength"]},
+    {name:"Around the World",tags:["core","strength"]},{name:"Figure 8",tags:["core","strength"]},
+    {name:"Side Bend",tags:["core","strength"]},{name:"Standing Oblique Crunch",tags:["core","strength"]}
+  ],
+  glute:[
+    {name:"Glute Bridge",tags:["glute","strength"]},{name:"Single-Leg Glute Bridge",tags:["glute","strength"]},
+    {name:"Hip Thrust",tags:["glute","strength"]},{name:"Barbell Hip Thrust",tags:["glute","strength"]},
+    {name:"Banded Hip Thrust",tags:["glute","strength"]},{name:"Donkey Kick",tags:["glute","strength"]},
+    {name:"Hydrant",tags:["glute","strength"]},{name:"Rainbows",tags:["glute","strength"]},
+    {name:"Kickback",tags:["glute","strength"]},{name:"Clamshell",tags:["glute","strength","mobility"]},
+    {name:"Side-Lying Hip Abduction",tags:["glute","strength"]},{name:"Frog Pump",tags:["glute","strength"]},
+    {name:"Sumo Deadlift",tags:["glute","lower","strength"]},{name:"Pull-Through",tags:["glute","strength"]},
+    {name:"Good Morning",tags:["glute","lower","strength"]},{name:"Step-Up to Hip Extension",tags:["glute","lower","strength"]},
+    {name:"Reverse Hyper",tags:["glute","strength"]},{name:"Cable Kickback",tags:["glute","strength"]},
+    {name:"Banded Walk",tags:["glute","strength"]},{name:"Monster Walk",tags:["glute","strength"]},
+    {name:"Sumo Squat Pulse",tags:["glute","lower","strength"]},{name:"Lunge to Kickback",tags:["glute","lower","strength"]},
+    {name:"Single-Leg Deadlift",tags:["glute","lower","strength","balance"]},
+    {name:"Hip Abduction Machine",tags:["glute","strength"]},{name:"45 Back Extension",tags:["glute","lower","strength"]},
+    {name:"Glute March",tags:["glute","core","strength"]},{name:"Swiss Ball Hip Thrust",tags:["glute","strength","core"]},
+    {name:"Elevated Hip Thrust",tags:["glute","strength"]},{name:"Wide-Stance Squat",tags:["glute","lower","strength"]},
+    {name:"Lateral Leg Raise",tags:["glute","strength"]},{name:"Fire Hydrant",tags:["glute","strength"]}
+  ],
+  cardio:[
+    {name:"High Knees",tags:["cardio","hiit"]},{name:"Butt Kicks",tags:["cardio","hiit"]},
+    {name:"Jumping Jacks",tags:["cardio","hiit"]},{name:"Star Jumps",tags:["cardio","hiit"]},
+    {name:"Burpee",tags:["cardio","full","hiit"]},{name:"Burpee No Push-Up",tags:["cardio","full","hiit"]},
+    {name:"Half Burpee",tags:["cardio","full","hiit"]},{name:"Jump Rope",tags:["cardio","hiit"]},
+    {name:"Box Step",tags:["cardio"]},{name:"Lateral Shuffle",tags:["cardio","hiit"]},
+    {name:"Squat Jump",tags:["cardio","lower","hiit"]},{name:"Tuck Jump",tags:["cardio","lower","hiit"]},
+    {name:"Broad Jump",tags:["cardio","lower","hiit"]},{name:"Speed Skater",tags:["cardio","lower","hiit"]},
+    {name:"Sprint in Place",tags:["cardio","hiit"]},{name:"Run in Place",tags:["cardio"]},
+    {name:"Mountain Climber",tags:["cardio","core","hiit"]},{name:"Fast Mountain Climber",tags:["cardio","core","hiit"]},
+    {name:"Plyo Push-Up",tags:["cardio","upper","hiit"]},{name:"Clap Push-Up",tags:["cardio","upper","hiit"]},
+    {name:"Box Jump",tags:["cardio","lower","hiit"]},{name:"Depth Jump",tags:["cardio","lower","hiit"]},
+    {name:"Battle Rope Waves",tags:["cardio","upper"]},{name:"Rowing Machine",tags:["cardio","full"]},
+    {name:"Bike Sprint",tags:["cardio"]},{name:"Stair Climber",tags:["cardio","lower"]},
+    {name:"Treadmill Sprint",tags:["cardio"]},{name:"Power Skip",tags:["cardio","hiit"]},
+    {name:"Lateral Bound",tags:["cardio","lower","hiit"]},{name:"Ankle Hop",tags:["cardio","lower"]},
+    {name:"180 Jump Squat",tags:["cardio","lower","hiit"]},{name:"Plank Jack",tags:["cardio","core","hiit"]},
+    {name:"Jumping Lunge",tags:["cardio","lower","hiit"]},{name:"Elliptical Intervals",tags:["cardio"]}
+  ],
+  mobility:[
+    {name:"90/90 Hip Stretch",tags:["mobility","lower"]},{name:"Pigeon Pose",tags:["mobility","glute","lower"]},
+    {name:"Worlds Greatest Stretch",tags:["mobility","full"]},{name:"Thoracic Rotation",tags:["mobility","upper"]},
+    {name:"Cat-Cow",tags:["mobility","core"]},{name:"Childs Pose",tags:["mobility","full"]},
+    {name:"Thread the Needle",tags:["mobility","upper"]},{name:"Down Dog",tags:["mobility","full"]},
+    {name:"Lunge with Twist",tags:["mobility","lower","full"]},{name:"Hip Circles",tags:["mobility","lower"]},
+    {name:"Ankle Circles",tags:["mobility","lower"]},{name:"Leg Swings",tags:["mobility","lower"]},
+    {name:"Arm Circles",tags:["mobility","upper"]},{name:"Shoulder Cross Body Stretch",tags:["mobility","upper"]},
+    {name:"Doorway Chest Stretch",tags:["mobility","upper"]},{name:"Neck Side Stretch",tags:["mobility","upper"]},
+    {name:"Figure 4 Stretch",tags:["mobility","glute","lower"]},{name:"Hip Flexor Lunge",tags:["mobility","lower"]},
+    {name:"Standing Quad Stretch",tags:["mobility","lower"]},{name:"Standing Hamstring Reach",tags:["mobility","lower"]},
+    {name:"Seated Forward Fold",tags:["mobility","lower"]},{name:"Spinal Twist",tags:["mobility","core"]},
+    {name:"Lateral Flexion",tags:["mobility","core"]},{name:"Wrist Circles",tags:["mobility","upper"]},
+    {name:"Chest Opener",tags:["mobility","upper"]},{name:"T-Spine Extension",tags:["mobility","upper"]},
+    {name:"Wall Shoulder Stretch",tags:["mobility","upper"]},{name:"Glute Stretch",tags:["mobility","glute"]},
+    {name:"Calf Stretch",tags:["mobility","lower"]},{name:"Couch Stretch",tags:["mobility","lower","glute"]},
+    {name:"Frog Stretch",tags:["mobility","glute","lower"]},{name:"Lat Stretch",tags:["mobility","upper"]},
+    {name:"Scorpion Stretch",tags:["mobility","full"]},{name:"Inchworm",tags:["mobility","full","upper"]}
+  ],
+  full:[
+    {name:"Burpee",tags:["full","cardio","hiit"]},{name:"Turkish Get-Up",tags:["full","strength","mobility"]},
+    {name:"Kettlebell Swing",tags:["full","cardio","strength"]},{name:"Clean and Press",tags:["full","strength"]},
+    {name:"Thruster",tags:["full","strength","cardio"]},{name:"Devil Press",tags:["full","cardio","hiit"]},
+    {name:"Man Maker",tags:["full","strength","cardio"]},{name:"Squat to Press",tags:["full","strength"]},
+    {name:"Woodchop",tags:["full","core","strength"]},{name:"Bear Crawl",tags:["full","upper","cardio"]},
+    {name:"Farmer Carry",tags:["full","core","strength"]},{name:"Suitcase Carry",tags:["full","core","strength"]},
+    {name:"Snatch",tags:["full","strength","cardio"]},{name:"Push Press",tags:["full","upper","strength"]},
+    {name:"Deadlift to Row",tags:["full","strength"]},{name:"Lunge to Curl",tags:["full","strength"]},
+    {name:"Squat to Curl to Press",tags:["full","strength"]},{name:"Renegade Row",tags:["full","upper","core"]},
+    {name:"Inchworm to Push-Up",tags:["full","upper","mobility"]},{name:"Plank to Down Dog",tags:["full","mobility"]},
+    {name:"Battle Rope Waves",tags:["full","cardio","upper"]},{name:"Sled Push",tags:["full","cardio","lower"]},
+    {name:"Lateral Bound to Squat",tags:["full","cardio","lower"]},{name:"Jump Squat to Press",tags:["full","cardio","strength"]},
+    {name:"Push-Up to Rotate",tags:["full","upper","core"]},{name:"Reverse Lunge to Knee Drive",tags:["full","lower","cardio"]},
+    {name:"Step-Up to Press",tags:["full","lower","upper"]}
+  ]
+};
+
+/* ── STATE ── */
+let currentClassType = 'HIIT';
+let currentRating = 0;
+let logParticipants = [];
+let logEntries = [];
+let dbCategoryFilter = 'all';
+
+const TYPE_COLORS = {
+  HIIT:'var(--hiit)', Strength:'var(--strength)',
+  '15/15/15':'var(--tri15)', Circuits:'var(--circuits)', PT:'var(--pt)'
+};
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  document.getElementById('preview-date').textContent =
+    today.toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const ld = document.getElementById('log-date');
+  const lt = document.getElementById('log-time');
+  if (ld) ld.value = today.toISOString().split('T')[0];
+  if (lt) lt.value = `${String(today.getHours()).padStart(2,'0')}:${String(today.getMinutes()).padStart(2,'0')}`;
+  updateCalculator();
+  renderDatabase();
+  loadLogEntries();
+});
+
+/* ── NAVIGATION ── */
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  const idx = ['builder','log','database'].indexOf(name);
+  if (idx >= 0) document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  if (name === 'database') renderDatabase();
+}
+
+/* ── CLASS TYPE ── */
+function setClassType(type, btn) {
+  currentClassType = type;
+  document.querySelectorAll('.class-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const tag = document.getElementById('preview-type');
+  tag.textContent = type;
+  tag.style.color = TYPE_COLORS[type] || 'var(--accent)';
+  document.getElementById('pt-client-row').classList.toggle('visible', type === 'PT');
+  applyClassPreset(type);
+  updateCalculator();
+}
+
+function applyClassPreset(type) {
+  const P = {
+    HIIT:       {work:40,  rest:20,  sets:3, setBetween:15, warmup:5, cooldown:5,  finWork:30, finSets:2, finRest:10},
+    Strength:   {work:45,  rest:60,  sets:4, setBetween:60, warmup:7, cooldown:5,  finWork:40, finSets:3, finRest:20},
+    '15/15/15': {work:15,  rest:15,  sets:3, setBetween:15, warmup:5, cooldown:5,  finWork:15, finSets:3, finRest:15},
+    Circuits:   {work:45,  rest:15,  sets:3, setBetween:30, warmup:5, cooldown:5,  finWork:30, finSets:2, finRest:10},
+    PT:         {work:45,  rest:60,  sets:4, setBetween:60, warmup:7, cooldown:8,  finWork:40, finSets:3, finRest:20}
+  };
+  const p = P[type]; if (!p) return;
+  document.getElementById('workTime').value      = p.work;
+  document.getElementById('restTime').value      = p.rest;
+  document.getElementById('setsCount').value     = p.sets;
+  document.getElementById('setBetweenRest').value= p.setBetween;
+  document.getElementById('warmupTime').value    = p.warmup;
+  document.getElementById('cooldownTime').value  = p.cooldown;
+  document.getElementById('fin-work').value      = p.finWork;
+  document.getElementById('fin-sets').value      = p.finSets;
+  document.getElementById('fin-rest').value      = p.finRest;
+}
+
+/* ── TIME CALCULATOR ── */
+function updateCalculator() {
+  const total      = +document.getElementById('totalTime').value     || 45;
+  const work       = +document.getElementById('workTime').value      || 40;
+  const rest       = +document.getElementById('restTime').value      || 20;
+  const sets       = +document.getElementById('setsCount').value     || 3;
+  const setBetween = +document.getElementById('setBetweenRest').value|| 30;
+  const warmup     = +document.getElementById('warmupTime').value    || 5;
+  const cooldown   = +document.getElementById('cooldownTime').value  || 5;
+  const finWork    = +document.getElementById('fin-work').value      || 30;
+  const finSets    = +document.getElementById('fin-sets').value      || 2;
+  const finRest    = +document.getElementById('fin-rest').value      || 10;
+
+  const finTotalSec = (finWork * finSets) + (finRest * (finSets - 1));
+  const finMin = finTotalSec / 60;
+  const availableSec = (total - warmup - cooldown - finMin) * 60;
+  const perEx  = (work * sets) + (setBetween * (sets - 1)) + rest;
+  const maxEx  = Math.max(0, Math.floor(availableSec / perEx));
+  const workMin = (work * sets * maxEx) / 60;
+  const restMin = ((rest * maxEx) + (setBetween * (sets-1) * maxEx)) / 60;
+  const totalUsed = warmup + workMin + restMin + finMin + cooldown;
+
+  const fmt = m => { const mn=Math.floor(m); const s=Math.round((m-mn)*60); return `${mn}:${String(s).padStart(2,'0')}`; };
+
+  document.getElementById('calc-warmup').textContent   = `${warmup}:00`;
+  document.getElementById('calc-work').textContent     = fmt(workMin);
+  document.getElementById('calc-rest').textContent     = fmt(restMin);
+  document.getElementById('calc-finisher').textContent = fmt(finMin);
+  document.getElementById('calc-cooldown').textContent = `${cooldown}:00`;
+  document.getElementById('calc-total').textContent    = `${fmt(totalUsed)} / ${maxEx} ex`;
+  document.getElementById('seg-warmup-dur').textContent   = `${warmup}:00`;
+  document.getElementById('seg-cooldown-dur').textContent = `${cooldown}:00`;
+  document.getElementById('seg-main-dur').textContent     = fmt(workMin + restMin);
+  document.getElementById('seg-finisher-dur').textContent = fmt(finMin);
+  document.getElementById('preview-duration').textContent = `⏱ ${total} min`;
+
+  const pct = Math.min(100, (totalUsed / total) * 100);
+  const bar = document.getElementById('time-bar-fill');
+  bar.style.width = pct + '%';
+  bar.style.background = pct > 97 ? 'var(--hiit)' : pct > 85 ? 'var(--pt)' : 'var(--accent)';
+  const remaining = total - totalUsed;
+  document.getElementById('calc-remaining').textContent =
+    pct > 98 ? '⚠️ Class is full' : `${fmt(remaining)} buffer remaining`;
+  updatePreview();
+}
+
+/* ── SIMPLE SLOTS ── */
+function addSimpleSlot(containerId) {
+  const c = document.getElementById(containerId);
+  const div = document.createElement('div'); div.className = 'simple-slot';
+  div.innerHTML = `<input class="simple-exercise-input" type="text" placeholder="Exercise name..." oninput="updatePreview()">
+    <button class="delete-btn" onclick="this.parentElement.remove();updatePreview()">×</button>`;
+  c.appendChild(div);
+}
+
+/* ── MAIN BLOCK SLOTS ── */
+function addMainSlot() {
+  const c = document.getElementById('main-slots');
+  const div = document.createElement('div'); div.className = 'exercise-slot';
+  div.innerHTML = `
+    <select class="category-select" onchange="updateExerciseOptions(this)">
+      <option value="">Category</option>
+      <option value="upper">Upper Body</option><option value="lower">Lower Body</option>
+      <option value="core">Core</option><option value="glute">Glute</option>
+      <option value="cardio">Cardio</option><option value="full">Full Body</option>
+    </select>
+    <select class="exercise-select" onchange="updatePreview()"><option>— Select exercise —</option></select>
+    <button class="delete-btn" onclick="this.parentElement.remove();updatePreview()">×</button>`;
+  c.appendChild(div);
+}
+
+/* ── FINISHER SLOTS ── */
+function addFinisherSlot() {
+  const c = document.getElementById('finisher-slots');
+  const div = document.createElement('div'); div.className = 'exercise-slot';
+  div.innerHTML = `
+    <select class="category-select" onchange="updateExerciseOptions(this)">
+      <option value="">Category</option>
+      <option value="cardio">Cardio</option><option value="full">Full Body</option><option value="core">Core</option>
+    </select>
+    <select class="exercise-select" onchange="updatePreview()"><option>— Select exercise —</option></select>
+    <button class="delete-btn" onclick="this.parentElement.remove();updatePreview()">×</button>`;
+  c.appendChild(div);
+}
+
+function updateExerciseOptions(sel) {
+  const cat = sel.value;
+  const exSel = sel.nextElementSibling;
+  exSel.innerHTML = '<option>— Select exercise —</option>';
+  if (!cat || !EXERCISES[cat]) return;
+  EXERCISES[cat].forEach(ex => { const o=document.createElement('option'); o.value=o.textContent=ex.name; exSel.appendChild(o); });
+  exSel.onchange = updatePreview;
+  updatePreview();
+}
+
+/* ── PREVIEW ── */
+function updatePreview() {
+  const work    = +document.getElementById('workTime').value  || 40;
+  const rest    = +document.getElementById('restTime').value  || 20;
+  const sets    = +document.getElementById('setsCount').value || 3;
+  const finWork = +document.getElementById('fin-work').value  || 30;
+  const finSets = +document.getElementById('fin-sets').value  || 2;
+  const finRest = +document.getElementById('fin-rest').value  || 10;
+  const clientName = document.getElementById('pt-client-name')?.value || '';
+
+  const subtitle = document.getElementById('preview-subtitle');
+  subtitle.textContent = (currentClassType === 'PT' && clientName) ? `Client: ${clientName}` : '';
+  subtitle.style.color = 'var(--pt)';
+
+  const tbody = document.getElementById('preview-body');
+  const rows = []; let exCount = 0;
+
+  const warmupInputs = document.querySelectorAll('#warmup-slots .simple-exercise-input');
+  const warmupExs = [...warmupInputs].map(i=>i.value.trim()).filter(Boolean);
+  if (warmupExs.length) {
+    rows.push(`<tr class="segment-row"><td colspan="5">🌡 Warm-Up (${document.getElementById('warmupTime').value||5} min)</td></tr>`);
+    warmupExs.forEach(ex => rows.push(`<tr><td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">—</td><td class="ex-name">${ex}</td><td><span class="tag tag-mobility">warm-up</span></td><td class="ex-timing" style="color:var(--muted)">as prescribed</td><td class="ex-timing">—</td></tr>`));
+  }
+
+  const mainSlots = document.querySelectorAll('#main-slots .exercise-slot');
+  const mainExs = [];
+  mainSlots.forEach(slot => {
+    const cat = slot.querySelector('.category-select')?.value||'';
+    const ex  = slot.querySelector('.exercise-select')?.value||'';
+    if (ex && ex !== '— Select exercise —') mainExs.push({cat,ex});
+  });
+  if (mainExs.length) {
+    rows.push(`<tr class="segment-row"><td colspan="5">⚡ Main Block</td></tr>`);
+    mainExs.forEach(({cat,ex}) => { exCount++;
+      rows.push(`<tr><td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">${exCount}</td><td class="ex-name">${ex}</td><td><span class="tag ex-cat tag-${cat||'full'}">${cat||'—'}</span></td><td class="ex-timing">${sets} × ${work}s</td><td class="ex-timing">${rest}s</td></tr>`);
+    });
+  }
+
+  const finSlots = document.querySelectorAll('#finisher-slots .exercise-slot');
+  const finExs = [];
+  finSlots.forEach(slot => {
+    const cat = slot.querySelector('.category-select')?.value||'';
+    const ex  = slot.querySelector('.exercise-select')?.value||'';
+    if (ex && ex !== '— Select exercise —') finExs.push({cat,ex});
+  });
+  if (finExs.length) {
+    rows.push(`<tr class="segment-row"><td colspan="5">🔥 Finisher — ${finWork}s work · ${finSets} sets · ${finRest}s rest</td></tr>`);
+    finExs.forEach(({cat,ex}) => rows.push(`<tr><td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">F</td><td class="ex-name">${ex}</td><td><span class="tag ex-cat tag-${cat||'full'}">${cat||'—'}</span></td><td class="ex-timing">${finSets} × ${finWork}s</td><td class="ex-timing">${finRest}s</td></tr>`));
+  }
+
+  const coolInputs = document.querySelectorAll('#cooldown-slots .simple-exercise-input');
+  const coolExs = [...coolInputs].map(i=>i.value.trim()).filter(Boolean);
+  if (coolExs.length) {
+    rows.push(`<tr class="segment-row"><td colspan="5">❄️ Cool-Down (${document.getElementById('cooldownTime').value||5} min)</td></tr>`);
+    coolExs.forEach(ex => rows.push(`<tr><td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">—</td><td class="ex-name">${ex}</td><td><span class="tag tag-mobility">cool-down</span></td><td class="ex-timing" style="color:var(--muted)">hold/flow</td><td class="ex-timing">—</td></tr>`));
+  }
+
+  tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--muted);font-size:12px">Select exercises above to build your class plan</td></tr>';
+  document.getElementById('preview-exercises').textContent = `💪 ${exCount} main exercises`;
+}
+
+/* ── PRINT ── */
+function printClass() { window.print(); }
+
+/* ── AUTO FILL ── */
+function autoFill() {
+  const map = {
+    HIIT:      {main:['cardio','cardio','lower','full','cardio','core','cardio','lower']},
+    Strength:  {main:['upper','lower','upper','lower','core','glute','upper','lower']},
+    '15/15/15':{main:['upper','lower','core','cardio','glute','upper','lower','full']},
+    Circuits:  {main:['upper','lower','core','cardio','glute','upper','lower','full']},
+    PT:        {main:['lower','upper','core','glute','lower','upper','cardio','full']}
+  };
+  const warmupList   = ['Hip circles','Leg swings','Arm circles','Cat-cow','Inchworm'];
+  const cooldownList = ["Pigeon pose","Child's pose","90/90 hip stretch","Thoracic rotation","Chest opener"];
+
+  const fill = (id, list) => {
+    const c = document.getElementById(id); c.innerHTML = '';
+    list.slice(0,3).forEach(ex => {
+      const d = document.createElement('div'); d.className = 'simple-slot';
+      d.innerHTML = `<input class="simple-exercise-input" type="text" value="${ex}" oninput="updatePreview()">
+        <button class="delete-btn" onclick="this.parentElement.remove();updatePreview()">×</button>`;
+      c.appendChild(d);
+    });
+  };
+  fill('warmup-slots', warmupList);
+  fill('cooldown-slots', cooldownList);
+
+  const buildSlots = (containerId, categories, isFinisher) => {
+    const c = document.getElementById(containerId); c.innerHTML = '';
+    const opts = isFinisher
+      ? '<option value="">Category</option><option value="cardio">Cardio</option><option value="full">Full Body</option><option value="core">Core</option>'
+      : '<option value="">Category</option><option value="upper">Upper Body</option><option value="lower">Lower Body</option><option value="core">Core</option><option value="glute">Glute</option><option value="cardio">Cardio</option><option value="full">Full Body</option>';
+    categories.forEach(cat => {
+      const d = document.createElement('div'); d.className = 'exercise-slot';
+      d.innerHTML = `<select class="category-select" onchange="updateExerciseOptions(this)">${opts}</select>
+        <select class="exercise-select" onchange="updatePreview()"><option>— Select exercise —</option></select>
+        <button class="delete-btn" onclick="this.parentElement.remove();updatePreview()">×</button>`;
+      c.appendChild(d);
+      const catSel = d.querySelector('.category-select'); catSel.value = cat;
+      const exSel  = d.querySelector('.exercise-select');
+      exSel.innerHTML = '<option>— Select exercise —</option>';
+      if (EXERCISES[cat]) {
+        EXERCISES[cat].forEach(ex => { const o=document.createElement('option'); o.value=o.textContent=ex.name; exSel.appendChild(o); });
+        exSel.value = EXERCISES[cat][Math.floor(Math.random()*EXERCISES[cat].length)].name;
+      }
+      exSel.onchange = updatePreview;
+    });
+  };
+  buildSlots('main-slots', map[currentClassType]?.main||['full','cardio','lower','upper','core','glute','full','cardio'], false);
+  buildSlots('finisher-slots', ['cardio','full'], true);
+  updatePreview();
+}
+
+function clearAll() {
+  ['warmup-slots','main-slots','finisher-slots','cooldown-slots'].forEach(id => document.getElementById(id).innerHTML='');
+  addSimpleSlot('warmup-slots'); addMainSlot(); addFinisherSlot(); addSimpleSlot('cooldown-slots');
+  updatePreview();
+}
+
+/* ══════════════════════════════════════════════
+   CLASS LOG — FIREBASE FIRESTORE
+══════════════════════════════════════════════ */
+
+/* ── LOAD FROM FIRESTORE ── */
+async function loadLogEntries() {
+  const noMsg = document.getElementById('no-entries-msg');
+  const list  = document.getElementById('log-entries-list');
+  noMsg.innerHTML = '<span style="color:var(--muted);font-size:13px">⏳ Loading your class log...</span>';
+  noMsg.style.display = 'block';
+  list.innerHTML = '';
+  try {
+    const snapshot = await db.collection('classLogs').orderBy('sortDate','desc').get();
+    logEntries = snapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
+    renderLogEntries();
+  } catch(e) {
+    console.error('Firestore load error:', e);
+    noMsg.innerHTML = '<span style="color:var(--hiit);font-size:13px">⚠️ Could not load log. Check internet connection and refresh.</span>';
+  }
+}
+
+/* ── SAVE TO FIRESTORE ── */
+async function saveLogEntry() {
+  const date = document.getElementById('log-date').value;
+  const type = document.getElementById('log-type').value;
+  if (!date || !type) { alert('Fill in at least Date and Class Type.'); return; }
+
+  const saveBtn = document.querySelector('#log-form .btn-primary');
+  saveBtn.textContent = 'Saving...'; saveBtn.disabled = true;
+
+  const entry = {
+    date, type,
+    time:       document.getElementById('log-time').value,
+    duration:   document.getElementById('log-duration').value,
+    location:   document.getElementById('log-location').value,
+    attendance: document.getElementById('log-attendance').value,
+    participants: [...logParticipants],
+    rating:     currentRating,
+    energy:     document.getElementById('log-energy').value,
+    wins:       document.getElementById('log-wins').value,
+    adjust:     document.getElementById('log-adjust').value,
+    notes:      document.getElementById('log-notes').value,
+    sortDate:   date,
+    savedAt:    firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    const docRef = await db.collection('classLogs').add(entry);
+    entry.firestoreId = docRef.id;
+    logEntries.unshift(entry);
+    logParticipants = []; renderChips(); setRating(0);
+    ['log-wins','log-adjust','log-notes','log-location'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('log-attendance').value = '';
+    document.getElementById('log-energy').value = '';
+    toggleLogForm();
+    renderLogEntries();
+  } catch(e) {
+    console.error('Save error:', e);
+    alert('Error saving. Check your internet connection and try again.');
+  } finally {
+    saveBtn.textContent = 'Save Entry'; saveBtn.disabled = false;
+  }
+}
+
+/* ── DELETE FROM FIRESTORE ── */
+async function deleteLogEntry(firestoreId) {
+  if (!confirm('Delete this class entry?')) return;
+  try {
+    await db.collection('classLogs').doc(firestoreId).delete();
+    logEntries = logEntries.filter(e => e.firestoreId !== firestoreId);
+    renderLogEntries();
+  } catch(e) {
+    console.error('Delete error:', e);
+    alert('Error deleting entry. Check your internet connection.');
+  }
+}
+
+function toggleLogForm() {
+  const f = document.getElementById('log-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+function addParticipant() {
+  const inp = document.getElementById('participant-input');
+  const n = inp.value.trim(); if (!n) return;
+  logParticipants.push(n); renderChips(); inp.value = '';
+}
+
+function removeParticipant(n) {
+  logParticipants = logParticipants.filter(p => p !== n); renderChips();
+}
+
+function renderChips() {
+  document.getElementById('participant-chips').innerHTML =
+    logParticipants.map(p => `<div class="chip"><span>${p}</span>
+      <button class="chip-remove" onclick="removeParticipant('${p}')">×</button></div>`).join('');
+}
+
+function setRating(n) {
+  currentRating = n;
+  document.querySelectorAll('.star-btn').forEach((s,i) => s.classList.toggle('active', i < n));
+}
+
+function renderLogEntries() {
+  const list  = document.getElementById('log-entries-list');
+  const noMsg = document.getElementById('no-entries-msg');
+  if (!logEntries.length) {
+    noMsg.innerHTML = 'No classes logged yet. Tap "+ Log Class" to add your first.';
+    noMsg.style.display = 'block'; list.innerHTML = ''; return;
+  }
+  noMsg.style.display = 'none';
+  list.innerHTML = logEntries.map(e => {
+    const d = new Date(e.date + 'T12:00:00');
+    const stars = e.rating ? '★'.repeat(e.rating)+'☆'.repeat(5-e.rating) : '';
+    const parts = (e.participants||[]).map(p=>`<span class="participant-tag">${p}</span>`).join('');
+    return `<div class="log-entry">
+      <div class="entry-date-block">
+        <div class="entry-day">${d.getDate()}</div>
+        <div class="entry-month">${d.toLocaleString('en',{month:'short'}).toUpperCase()}</div>
+      </div>
+      <div class="entry-body">
+        <div class="entry-title">
+          <span style="color:${TYPE_COLORS[e.type]||'var(--accent)'}">${e.type}</span>
+          <span style="font-size:12px;color:var(--muted);font-weight:400">${e.location||''}</span>
+        </div>
+        <div class="entry-meta">
+          ${e.time?`<span>🕐 ${e.time}</span>`:''}
+          ${e.duration?`<span>⏱ ${e.duration}min</span>`:''}
+          ${e.attendance?`<span>👥 ${e.attendance}</span>`:''}
+          ${e.energy?`<span>${e.energy}</span>`:''}
+        </div>
+        ${e.wins?`<div class="entry-notes">✅ <strong>Worked:</strong> ${e.wins}</div>`:''}
+        ${e.adjust?`<div class="entry-notes" style="margin-top:3px">🔄 <strong>Adjust:</strong> ${e.adjust}</div>`:''}
+        ${e.notes?`<div class="entry-notes" style="margin-top:3px">📝 ${e.notes}</div>`:''}
+        ${parts?`<div class="entry-participants">${parts}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        ${stars?`<div class="entry-rating">${stars}</div>`:''}
+        <button class="delete-btn" onclick="deleteLogEntry('${e.firestoreId}')" title="Delete">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── DATABASE VIEW ── */
+function renderDatabase() {
+  const search = document.getElementById('db-search')?.value?.toLowerCase()||'';
+  const all = Object.entries(EXERCISES).flatMap(([cat,exs]) => exs.map(ex=>({...ex,primaryCat:cat})));
+  const filtered = all.filter(ex => {
+    const matchCat    = dbCategoryFilter==='all'||ex.primaryCat===dbCategoryFilter||ex.tags.includes(dbCategoryFilter);
+    const matchSearch = !search||ex.name.toLowerCase().includes(search);
+    return matchCat && matchSearch;
+  });
+  document.getElementById('db-count').textContent = `${filtered.length} exercises`;
+  document.getElementById('exercise-grid').innerHTML = filtered.map(ex => {
+    const tagHtml = ex.tags.slice(0,3).map(t=>`<span class="tag tag-${t}">${t}</span>`).join('');
+    return `<div class="exercise-card"><div class="exercise-card-name">${ex.name}</div><div class="exercise-card-meta">${tagHtml}</div></div>`;
+  }).join('');
+}
+
+function filterCategory(cat, btn) {
+  dbCategoryFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDatabase();
+}
+
+function filterDatabase() { renderDatabase(); }
+</script>
+</body>
+</html>
